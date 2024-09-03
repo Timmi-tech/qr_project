@@ -58,18 +58,20 @@
                     }
                 }
             }
+            console.log('Retrieved CSRF Token:', cookieValue);  // Debugging line
             return cookieValue;
         }
 
         function onScanSuccess(decodedText, decodedResult) {
             const csrftoken = getCookie('csrftoken');
+            console.log('Sending POST request with CSRF Token:', csrftoken);  // Debugging line
             fetch('/qr_app/admit/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': csrftoken
                 },
-                body: `code=${decodedText}`
+                body: `code=${encodeURIComponent(decodedText)}`
             })
             .then(response => response.json())
             .then(data => {
