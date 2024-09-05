@@ -3,13 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Scan QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js" integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #reader {
+            width: 500px;
+            max-width: 100%;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        #message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .modal-body svg {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
 </head>
 <body>
-
+    <h1>Scan QR Code</h1>
     <div id="reader"></div>
-    <div id="message"></div>
+    <p id="message"></p>
 
     <!-- Success Modal -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
@@ -19,14 +59,12 @@
                     <h5 class="modal-title" id="successModalLabel">Success</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="green" class="bi bi-check-circle" viewBox="0 0 16 16">
-                            <path d="M15.854 4.146a.5.5 0 0 0-.708-.708L7 11.293 4.854 9.146a.5.5 0 1 0-.708.708l2.5 2.5a.5.5 0 0 0 .708 0l8-8z"/>
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-1 0A7 7 0 1 0 1 8a7 7 0 0 0 14 0z"/>
-                        </svg>
-                        <p id="successMessage">QR Code successfully admitted!</p>
-                    </div>
+                <div class="modal-body text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="green" class="bi bi-check-circle" viewBox="0 0 16 16">
+                        <path d="M15.854 4.146a.5.5 0 0 0-.708-.708L7 11.293 4.854 9.146a.5.5 0 1 0-.708.708l2.5 2.5a.5.5 0 0 0 .708 0l8-8z"/>
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
+                    </svg>
+                    <p id="successMessage">QR Code has been successfully admitted!</p>
                 </div>
             </div>
         </div>
@@ -40,21 +78,19 @@
                     <h5 class="modal-title" id="errorModalLabel">Error</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" class="bi bi-x-circle" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM7.5 11.5A.5.5 0 0 0 8 12a.5.5 0 0 0 .5-.5v-3.379l1.646 1.646a.5.5 0 1 0 .708-.708l-2.5-2.5a.5.5 0 0 0-.708 0l-2.5 2.5a.5.5 0 1 0 .708.708L7.5 8.621V11.5z"/>
-                        </svg>
-                        <p id="errorMessage">This QR Code has already been scanned!</p>
-                    </div>
+                <div class="modal-body text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="red" class="bi bi-x-circle" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
+                        <path d="M11.354 4.646a.5.5 0 0 0-.708 0L8 7.293 5.354 4.646a.5.5 0 1 0-.708.708L7.293 8 4.646 10.354a.5.5 0 1 0 .708.708L8 8.707l2.646 2.646a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0 0-.708z"/>
+                    </svg>
+                    <p id="errorMessage">This QR Code has already been scanned!</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -68,11 +104,13 @@
                     }
                 }
             }
+            console.log('Retrieved CSRF Token:', cookieValue);  // Debugging line
             return cookieValue;
         }
 
         function onScanSuccess(decodedText, decodedResult) {
             const csrftoken = getCookie('csrftoken');
+            console.log('Sending POST request with CSRF Token:', csrftoken);  // Debugging line
             fetch('/qr_app/admit/', {
                 method: 'POST',
                 headers: {
