@@ -123,11 +123,11 @@
             .then(data => {
                 if (data.status === 'success') {
                     document.getElementById('successMessage').innerText = data.message || "QR Code successfully admitted!";
-                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    let successModal = new bootstrap.Modal(document.getElementById('successModal'));
                     successModal.show();
                 } else if (data.status === 'error') {
                     document.getElementById('errorMessage').innerText = data.message || "This QR Code has already been scanned!";
-                    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                    let errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
                     errorModal.show();
                 }
             })
