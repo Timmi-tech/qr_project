@@ -1,11 +1,101 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scan QR Code</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js" integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #reader {
+            width: 500px;
+            max-width: 100%;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        #message {
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan QR Code</h1>
+    <div id="reader"></div>
+    <p id="message"></p>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            console.log('Retrieved CSRF Token:', cookieValue);  // Debugging line
+            return cookieValue;
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            const csrftoken = getCookie('csrftoken');
+            console.log('Sending POST request with CSRF Token:', csrftoken);  // Debugging line
+            fetch('/qr_app/admit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: `code=${encodeURIComponent(decodedText)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 });
+
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html> {% endcomment %}
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js" integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,57 +130,65 @@
             margin-top: 15px;
         }
 
-        .modal-body svg {
-            width: 50px;
-            height: 50px;
+        /* Modal Styling */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .success-icon, .error-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .success-icon {
+            color: green;
+        }
+
+        .error-icon {
+            color: red;
+        }
+
+        .close-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
     <h1>Scan QR Code</h1>
     <div id="reader"></div>
-    <p id="message"></p>
+    <div id="message"></div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="successModalLabel">Success</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="green" class="bi bi-check-circle" viewBox="0 0 16 16">
-                        <path d="M15.854 4.146a.5.5 0 0 0-.708-.708L7 11.293 4.854 9.146a.5.5 0 1 0-.708.708l2.5 2.5a.5.5 0 0 0 .708 0l8-8z"/>
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
-                    </svg>
-                    <p id="successMessage">QR Code has been successfully admitted!</p>
-                </div>
-            </div>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span id="modal-icon"></span>
+            <h2 id="modal-message"></h2>
+            <button class="close-button" onclick="closeModal()">Close</button>
         </div>
     </div>
 
-    <!-- Error Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="red" class="bi bi-x-circle" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
-                        <path d="M11.354 4.646a.5.5 0 0 0-.708 0L8 7.293 5.354 4.646a.5.5 0 1 0-.708.708L7.293 8 4.646 10.354a.5.5 0 1 0 .708.708L8 8.707l2.646 2.646a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0 0-.708z"/>
-                    </svg>
-                    <p id="errorMessage">This QR Code has already been scanned!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -104,13 +202,121 @@
                     }
                 }
             }
-            console.log('Retrieved CSRF Token:', cookieValue);  // Debugging line
             return cookieValue;
         }
 
         function onScanSuccess(decodedText, decodedResult) {
             const csrftoken = getCookie('csrftoken');
-            console.log('Sending POST request with CSRF Token:', csrftoken);  // Debugging line
+            fetch('/qr_app/admit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: new URLSearchParams({ code: decodedText }).toString()
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success modal with the decoded QR code value
+                    showModal('✔', `Code ${decodedText} has been successfully admitted!`, true);
+                } else {
+                    // Show error modal (already scanned)
+                    showModal('✖', `Error: Code ${decodedText} has already been scanned!`, false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function showModal(icon, message, isSuccess) {
+            const modal = document.getElementById('modal');
+            const modalIcon = document.getElementById('modal-icon');
+            const modalMessage = document.getElementById('modal-message');
+            
+            modalIcon.innerHTML = icon;
+            modalIcon.className = isSuccess ? 'success-icon' : 'error-icon';
+            modalMessage.innerText = message;
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 });
+
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html> {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js" integrity="sha512-k/KAe4Yff9EUdYI5/IAHlwUswqeipP+Cp5qnrsUjTPCgl51La2/JhyyjNciztD7mWNKLSXci48m7cctATKfLlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #reader {
+            width: 500px;
+            max-width: 100%;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan QR Code</h1>
+    <div id="reader"></div>
+
+    <script>
+        let hasScanned = false; // Flag to ensure the QR code is only processed once
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        function onScanSuccess(decodedText, decodedResult) {
+            if (hasScanned) return; // Skip if already scanned
+    
+            const csrftoken = getCookie('csrftoken');
+    
             fetch('/qr_app/admit/', {
                 method: 'POST',
                 headers: {
@@ -121,25 +327,47 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('successMessage').innerText = data.message || "QR Code successfully admitted!";
-                    let successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                    successModal.show();
-                } else if (data.status === 'error') {
-                    document.getElementById('errorMessage').innerText = data.message || "This QR Code has already been scanned!";
-                    let errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-                    errorModal.show();
+                // Only show the message if scan has not been processed
+                if (!hasScanned) {
+                    if (data.message.includes('admitted')) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    }
+                    hasScanned = true; // Set flag to true after processing
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                if (!hasScanned) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    hasScanned = true; // Set flag to true to avoid multiple messages
+                }
             });
         }
-
+    
         let html5QrcodeScanner = new Html5QrcodeScanner(
             "reader", { fps: 10, qrbox: 250 });
-
         html5QrcodeScanner.render(onScanSuccess);
     </script>
+    
 </body>
 </html>

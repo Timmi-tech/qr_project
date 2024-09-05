@@ -19,5 +19,5 @@ def admit_code(request):
             if created:
                 return JsonResponse({'message': f'Code {code} has been admitted.'})
             else:
-                return JsonResponse({'message': f'Code {code} has already been admitted.'})
+                return JsonResponse({'message': f'Code {code} has already been checked in.'})
     return JsonResponse({'message': 'Invalid request'}, status=400)
